@@ -175,7 +175,7 @@ run_checkpoint
 print_message "Instalación de entorno para el desarrollo en Python..."
 
 # Instalación de Homebrew
-run_setup_script "Homebrew" "~/debian-quick-setup-richardo2928/install_homebrew.sh"
+run_setup_script "Homebrew" "install_homebrew.sh"
 
 # Instalación de pyenv
 run_setup_script "Pyenv" "install_pyenv.sh"
