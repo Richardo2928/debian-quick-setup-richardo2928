@@ -29,7 +29,7 @@ reload_env () {
 run_setup_script() {
     # Asigna nombres descriptivos a los parámetros
     local script_name="$1"  # Nombre del proceso de instalación (por ejemplo, "Homebrew")
-    local script_path="$2"  # Ruta o nombre del script (por ejemplo, "install_brew.sh")
+    local script_path="~/debian-quick-setup-richardo2928/$2"  # Ruta o nombre del script (por ejemplo, "install_brew.sh")
 
     # Imprime el mensaje de inicio de instalación
     print_message "Instalando ${script_name}..."
@@ -175,7 +175,7 @@ run_checkpoint
 print_message "Instalación de entorno para el desarrollo en Python..."
 
 # Instalación de Homebrew
-run_setup_script "Homebrew" "install_homebrew.sh"
+run_setup_script "Homebrew" "~/debian-quick-setup-richardo2928/install_homebrew.sh"
 
 # Instalación de pyenv
 run_setup_script "Pyenv" "install_pyenv.sh"
