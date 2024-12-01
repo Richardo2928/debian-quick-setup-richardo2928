@@ -1,13 +1,15 @@
 #!/bin/bash
 
 # Instala dependencias de pyenv
-sudo apt update
 sudo apt install -y build-essential libssl-dev zlib1g-dev \
     libbz2-dev libreadline-dev libsqlite3-dev curl git \
     libncursesw5-dev xz-utils tk-dev libxml2-dev \
     libxmlsec1-dev libffi-dev liblzma-dev libedit-dev
 
-# Instala pyenv
+# Exportar Homebrew al entorno actual
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# Instala pyenv a tráves de brew
 brew install pyenv
 
 # Añade pyenv al PATH en ~/.bashrc

@@ -21,8 +21,8 @@ run_checkpoint() {
 }
 
 # Función para recargar el entorno de bash
-reload_env () {
-    source ~/.bashrc
+reload_env() {
+    . ~/.bashrc
 }
 
 # Función para ejecutar un script de instalación y recargar el entorno
@@ -119,11 +119,11 @@ main (){
         if [[ $CHOSEN_ENV == *"Python + PySide6"* ]]; then
             print_message "Instalando Python + PySide6..."
             run_setup_script "install_homebrew.sh"
-            reload_env
             run_setup_script "install_pyenv.sh"
-            reload_env
             run_setup_script "install_python_pyside6.sh"
+            reload_env
         fi
+    fi
 }
 
 main
