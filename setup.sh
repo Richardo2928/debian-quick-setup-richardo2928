@@ -74,7 +74,7 @@ main (){
     "C/C++ Dev Env" "Desarrolla en C/C++ Ahora" OFF \
     "Raylib" "Añade lo necesario para desarrollar en Raylib" OFF \
     "Python + PySide6" "Desarrolla GUI apps en Python Ahora" OFF \
-    3>&1 1>&2 2>)
+    3>&1 1>&2 2>&3)
 
     EXIT_STATUS=$?
 
