@@ -60,7 +60,6 @@ DOWNLOADS_DIR=$(xdg-user-dir DOWNLOAD 2>/dev/null || echo "$HOME/Descargas")
 
 main (){
     print_message "Permisos de Super Usuario requeridos..!"
-    su -v || { print_error "Setup cancelado."; exit 1; }
 
     run_checkpoint
 
