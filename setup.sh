@@ -29,27 +29,21 @@ reload_env () {
 run_setup_script() {
     # Asigna nombres descriptivos a los parámetros
     local script_name="$1"  # Nombre del proceso de instalación (por ejemplo, "Homebrew")
-    local script_path="~/debian-quick-setup-richardo2928/$2"  # Ruta o nombre del script (por ejemplo, "install_brew.sh")
 
     # Imprime el mensaje de inicio de instalación
     print_message "Instalando ${script_name}..."
 
-    # Verifica si el archivo del script existe y tiene permisos de ejecución
-    if [[ -f "$script_path" ]]; then
-        chmod +x "$script_path"
+    # Da permisos de ejecución al script
+    chmod +x "$script_name"
         
-        # Ejecuta el script en el entorno actual
-        ./"$script_path"
+    # Ejecuta el script en el entorno actual
+    ./"$script_name"
         
-        # Verifica si el script se ejecutó exitosamente
-        if [[ $? -eq 0 ]]; then
-            print_message "${script_name} se instaló correctamente."
-        else
-            print_error "Error al ejecutar ${script_name}."
-            exit 1
-        fi
+    # Verifica si el script se ejecutó exitosamente
+    if [[ $? -eq 0 ]]; then
+        print_message "${script_name} se instaló correctamente."
     else
-        print_error "El archivo de script ${script_path} no existe o no es accesible."
+        print_error "Error al ejecutar ${script_name}."
         exit 1
     fi
 
@@ -64,124 +58,75 @@ mkdir -p ~/Apps
 # Obtener la ruta de descargas, con fallback
 DOWNLOADS_DIR=$(xdg-user-dir DOWNLOAD 2>/dev/null || echo "$HOME/Descargas")
 
-# Fase 1: Instalación de Opera y corrección de formatos de video
-print_message "Instalando Opera..."
-cd "$DOWNLOADS_DIR"
-wget -O opera.deb https://download3.operacdn.com/pub/opera/desktop/102.0.4880.78/linux/opera-stable_102.0.4880.78_amd64.deb
-sudo dpkg -i opera.deb
-sudo apt --fix-broken install -y
-rm opera.deb
+main (){
+    print_message "Permisos de Super Usuario requeridos..!"
+    su -v || { print_error "Setup cancelado."; exit 1; }
 
-if command -v opera &>/dev/null; then
-    print_message "Opera se instaló correctamente."
-else
-    print_error "Error en la instalación de Opera."
-    exit 1
-fi
+    run_checkpoint
 
-print_message "Corrigiendo problemas con formatos de video en Opera..."
-git clone https://github.com/nicolas-meilan/fix-opera-linux-ffmpeg
-cd fix-opera-linux-ffmpeg/
-chmod +x fix-opera.sh
-sudo ./fix-opera.sh
-cd .. && rm -rf fix-opera-linux-ffmpeg/
+    CHOSEN_ENV=$(whiptail --title "My Quick Debian Setup" --checklist "Selecciona que deseas instalar" \
+    20 70 8 \
+    "Opera" "Mi navegador preferido" ON \
+    "OneDrive" "Instala un cliente GUI para OneDrive" OFF \
+    "Obsidian" "Mi app preferida para tomar notas" OFF \
+    "VS Code" "El mejor editor de código" OFF \
+    "Responsively" "Previsualiza tu web en diferentes dispositivos" OFF \
+    "C/C++ Dev Env" "Desarrolla en C/C++ Ahora" OFF \
+    "Raylib" "Añade lo necesario para desarrollar en Raylib" OFF \
+    "Python + PySide6" "Desarrolla GUI apps en Python Ahora" OFF \
+    3>&1 1>&2 2>)
 
-# Instalación de OneDriver
-print_message "Instalando OneDriver..."
-sudo apt install -y curl
-echo 'deb http://download.opensuse.org/repositories/home:/jstaf/Debian_12/ /' | sudo tee /etc/apt/sources.list.d/home:jstaf.list
-curl -fsSL https://download.opensuse.org/repositories/home:jstaf/Debian_12/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_jstaf.gpg > /dev/null
-sudo apt update && sudo apt install -y onedriver
+    EXIT_STATUS=$?
 
-if command -v onedriver &>/dev/null; then
-    print_message "OneDriver se instaló correctamente."
-else
-    print_error "Error en la instalación de OneDriver."
-    exit 1
-fi
+    if [[ $EXIT_STATUS -eq 0 ]]; then
+        if whiptail --yesno "¿Confirmas la instalación de los paquetes seleccionados?" 10 60; then
+            print_message "Comenzando la instalación..."
+        else
+            print_message "Instalación cancelada por el usuario."
+            exit 0
+        fi
 
-# Instalación de Obsidian
-print_message "Instalando Obsidian..."
-wget -O ~/Apps/Obsidian.AppImage https://github.com/obsidianmd/obsidian-releases/releases/download/v1.4.13/Obsidian-1.4.13.AppImage
-chmod +x ~/Apps/Obsidian.AppImage
+        print_message "Entorno seleccionado $CHOSEN_ENV"
 
-if [[ -f ~/Apps/Obsidian.AppImage ]]; then
-    print_message "Obsidian se descargó correctamente."
-else
-    print_error "Error en la descarga de Obsidian."
-    exit 1
-fi
+        if [[ $CHOSEN_ENV == *"Opera"* ]]; then
+            print_message "Instalando Opera..."
+            run_setup_script "install_opera.sh"
+        fi
+        if [[ $CHOSEN_ENV == *"OneDrive"* ]]; then
+            print_message "Instalando OneDrive..."
+            run_setup_script "install_onedrive_client.sh"
+        fi
+        if [[ $CHOSEN_ENV == *"Obsidian"* ]]; then
+            print_message "Instalando Obsidian..."
+            run_setup_script "install_obsidian.sh"
+        fi
+        if [[ $CHOSEN_ENV == *"VS Code"* ]]; then
+            print_message "Instalando VS Code..."
+            run_setup_script "install_VScode.sh"
+        fi
+        if [[ $CHOSEN_ENV == *"Responsively"* ]]; then
+            print_message "Instalando Responsively..."
+            run_setup_script "install_responsively.sh"
+        fi
+        if [[ $CHOSEN_ENV == *"C/C++ Dev Env"* ]]; then
+            print_message "Instalando entorno para C/C++..."
+            run_setup_script "install_cpp_dev_env.sh"
+        fi
+        if [[ $CHOSEN_ENV == *"Raylib"* ]]; then
+            print_message "Instalando Raylib..."
+            run_setup_script "install_raylib.sh"
+        fi
+        if [[ $CHOSEN_ENV == *"Python + PySide6"* ]]; then
+            print_message "Instalando Python + PySide6..."
+            run_setup_script "install_homebrew.sh"
+            reload_env
+            run_setup_script "install_pyenv.sh"
+            reload_env
+            run_setup_script "install_python_pyside6.sh"
+        fi
+}
 
-# CHECKPOINT 1
-run_checkpoint
-
-# Instalación de Visual Studio Code
-print_message "Instalando Visual Studio Code..."
-sudo apt install -y software-properties-common apt-transport-https wget gpg
-wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-sudo install -o root -g root -m 644 packages.microsoft.gpg /usr/share/keyrings/packages.microsoft.gpg
-sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
-sudo apt update && sudo apt install -y code
-
-if command -v code &>/dev/null; then
-    print_message "Visual Studio Code se instaló correctamente."
-else
-    print_error "Error en la instalación de Visual Studio Code."
-    exit 1
-fi
-
-# Instalación de Responsively
-print_message "Instalando Responsively..."
-wget -O ~/Apps/Responsively.AppImage https://github.com/responsively-org/responsively-app-releases/releases/download/v1.15.0/ResponsivelyApp-1.15.0.AppImage
-chmod +x ~/Apps/Responsively.AppImage
-
-# Instalación de Git
-print_message "Instalando Git..."
-if ! command -v git &>/dev/null; then
-    sudo apt install -y git
-else
-    print_message "Git ya está instalado."
-fi
-
-# CHECKPOINT 2
-run_checkpoint
-
-# Instalación de herramientas de desarrollo C/C++
-print_message "Instalando compiladores y utilidades para C/C++..."
-sudo apt install -y build-essential gcc g++ binutils cmake ninja-build
-
-if command -v gcc &>/dev/null && command -v g++ &>/dev/null && command -v cmake &>/dev/null; then
-    print_message "Herramientas de desarrollo C/C++ instaladas correctamente."
-else
-    print_error "Error en la instalación de herramientas C/C++."
-    exit 1
-fi
-
-# Instalación de dependencias para Raylib
-print_message "Instalando dependencias para Raylib..."
-sudo apt install -y libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev libwayland-dev libxkbcommon-dev
-
-if dpkg -l | grep -E 'libasound2-dev|libx11-dev|libxrandr-dev|libxi-dev|libgl1-mesa-dev|libglu1-mesa-dev|libxcursor-dev|libxinerama-dev|libwayland-dev|libxkbcommon-dev' &>/dev/null; then
-    print_message "Dependencias para Raylib instaladas correctamente."
-else
-    print_error "Error en la instalación de dependencias para Raylib."
-    exit 1
-fi
-
-# CHECKPOINT 3
-run_checkpoint
-
-# Instalaciones para Python y pyenv
-print_message "Instalación de entorno para el desarrollo en Python..."
-
-# Instalación de Homebrew
-run_setup_script "Homebrew" "install_homebrew.sh"
-
-# Instalación de pyenv
-run_setup_script "Pyenv" "install_pyenv.sh"
-
-# Instalación de Python y Pyside6
-run_setup_script "Python y PySide6" "install_python_pyside6.sh"
+main
 
 # Final
 run_checkpoint
